@@ -32,7 +32,9 @@ credentials-file: /etc/cloudflared/your-tunnel-id.json
 
 ingress:
   - hostname: kitkuhar.com
-    service: http://localhost:3000
+    service: http://localhost:80
+  - hostname: www.kitkuhar.com
+    service: http://localhost:80
   - hostname: webhook.kitkuhar.com
     service: http://localhost:9000
   - hostname: ssh.kitkuhar.com
