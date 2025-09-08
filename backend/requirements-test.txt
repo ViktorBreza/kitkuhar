@@ -1,0 +1,27 @@
+# Minimal requirements for testing
+# Install only essential packages for faster testing builds
+
+# Core Framework (minimal)
+fastapi==0.116.1
+uvicorn==0.35.0
+
+# Database (SQLite for testing)
+SQLAlchemy==2.0.43
+
+# Data Validation
+pydantic==2.11.7
+email-validator==2.2.0
+
+# Testing
+pytest==8.3.3
+pytest-asyncio==0.24.0
+httpx==0.27.2
+
+# File Upload (for tests)
+python-multipart==0.0.20
+
+# Minimal auth (skip heavy crypto for basic tests)
+passlib==1.7.4
+
+# Type checking
+typing_extensions==4.14.1
