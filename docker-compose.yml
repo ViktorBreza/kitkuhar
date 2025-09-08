@@ -84,7 +84,7 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/monitoring/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/monitoring/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -103,13 +103,13 @@ services:
         max-size: "50m"
         max-file: "5"
 
-  # Production Frontend (React)
+  # Production Frontend (Next.js)
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - REACT_APP_API_URL=/api
+        - NEXT_PUBLIC_API_URL=/api
         - NODE_ENV=production
     container_name: kitkuhar-frontend-prod
     restart: unless-stopped

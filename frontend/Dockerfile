@@ -13,12 +13,20 @@ RUN npm ci
 # Build stage
 FROM base AS builder
 WORKDIR /app
+
+# Accept build arguments
+ARG NODE_ENV=production
+ARG NEXT_PUBLIC_API_URL=/api
+
+# Set environment variables
+ENV NODE_ENV=$NODE_ENV
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_TELEMETRY_DISABLED=1
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Build Next.js app
-ENV NEXT_TELEMETRY_DISABLED 1
-ENV NODE_ENV=production
 RUN npm run build
 
 # Production stage with nginx
