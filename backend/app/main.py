@@ -88,15 +88,20 @@ development_origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://localhost:3333",
-    "http://127.0.0.1:3333",
+    "http://127.0.0.1:3333", 
     "http://localhost:8080",
     "http://127.0.0.1:8080",
+    "http://localhost",
+    "http://127.0.0.1",
+    "https://kitkuhar.com",
+    "https://www.kitkuhar.com",
 ]
 
 # Determine which origins to use based on environment
 environment = os.getenv("ENVIRONMENT", "development")
 if environment == "production":
-    origins = production_origins + ALLOWED_ORIGINS
+    # In production, allow both production URLs and development for testing
+    origins = production_origins + development_origins + ALLOWED_ORIGINS
 else:
     origins = development_origins + production_origins + ALLOWED_ORIGINS
 

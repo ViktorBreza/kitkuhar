@@ -1,9 +1,5 @@
-// API Configuration - Next.js environment variables  
-// Use localhost for browser requests, backend for server-side
-const isServer = typeof window === 'undefined';
-export const API_BASE_URL = isServer 
-  ? 'http://backend:8000/api'
-  : 'http://localhost:8000/api';
+// API Configuration - use environment variable or default to /api
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 // API Endpoints
 export const API_ENDPOINTS = {
