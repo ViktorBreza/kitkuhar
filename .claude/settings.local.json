@@ -99,7 +99,8 @@
       "Bash(npm run lint)",
       "Bash(npm run type-check:*)",
       "Bash(net start:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(git branch:*)"
     ],
     "deny": [],
     "ask": []
