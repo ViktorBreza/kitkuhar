@@ -98,7 +98,8 @@
       "Read(//c/**)",
       "Bash(npm run lint)",
       "Bash(npm run type-check:*)",
-      "Bash(net start:*)"
+      "Bash(net start:*)",
+      "Bash(tree:*)"
     ],
     "deny": [],
     "ask": []
