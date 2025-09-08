@@ -16,7 +16,7 @@ def test_basic_math():
 def test_string_operations():
     """Test basic string operations"""
     text = "Кіт Кухар"
-    assert len(text) == 8
+    assert len(text) == 9  # Ukrainian characters count correctly
     assert text.lower() == "кіт кухар"
     assert "Кухар" in text
 

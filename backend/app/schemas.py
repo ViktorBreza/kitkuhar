@@ -70,7 +70,11 @@ class RecipeBase(BaseModel):
     
     @validator('tags')
     def validate_tags(cls, v):
-        if v and any(tag_id <= 0 for tag_id in v):
+        if v and any(
+            (isinstance(tag, int) and tag <= 0) or 
+            (hasattr(tag, 'id') and tag.id <= 0) 
+            for tag in v
+        ):
             raise ValueError('All tag IDs must be positive')
         return v
 
