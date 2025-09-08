@@ -52,9 +52,14 @@ fi
 echo "🛑 Stopping existing containers..."
 sudo docker-compose down --remove-orphans || true
 
-# Clean up old images and containers
-echo "🧹 Cleaning up old Docker resources..."
-sudo docker system prune -af || true
+# Aggressive cleanup - remove ALL unused Docker data
+echo "🧹 Aggressive Docker cleanup (removes ALL unused data)..."
+sudo docker system prune -af --volumes || true
+sudo docker image prune -af || true
+sudo docker container prune -f || true
+sudo docker network prune -f || true
+sudo docker volume prune -f || true
+sudo docker builder prune -af || true
 
 # Build and start new containers
 echo "🔨 Building and starting containers..."
