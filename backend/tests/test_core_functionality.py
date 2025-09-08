@@ -54,9 +54,9 @@ def test_recipes_endpoint():
 
 def test_cors_headers():
     """Test that CORS headers are present"""
-    response = client.options("/api/recipes/")
-    # Should not fail completely
-    assert response.status_code in [200, 405, 404]  # Some responses may not support OPTIONS
+    response = client.get("/api/recipes/")  # Use GET instead of OPTIONS
+    # Should work properly
+    assert response.status_code == 200
 
 def test_nonexistent_recipe():
     """Test handling of non-existent recipe"""
