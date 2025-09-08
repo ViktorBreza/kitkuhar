@@ -17,22 +17,25 @@ wait_for_db() {
     echo "Database is up - continuing"
 }
 
-# Function to run database migrations
-run_migrations() {
-    echo "Running database migrations..."
-    if command -v alembic >/dev/null 2>&1; then
-        # Initialize alembic if not already done
-        if [ ! -f "alembic/versions" ]; then
-            echo "Initializing Alembic..."
-            alembic revision --autogenerate -m "Initial migration"
-        fi
-        
-        # Run migrations
-        alembic upgrade head
-        echo "Migrations completed"
-    else
-        echo "Alembic not found, skipping migrations"
-    fi
+# Function to create database tables
+create_tables() {
+    echo "Creating database tables..."
+    python -c "
+import sys
+sys.path.append('/app')
+
+try:
+    from app.database import engine
+    from app import models
+    
+    # Create all tables
+    models.Base.metadata.create_all(bind=engine)
+    print('Database tables created successfully')
+    
+except Exception as e:
+    print(f'Error creating tables: {e}')
+    exit(1)
+"
 }
 
 # Function to create initial data
@@ -101,8 +104,8 @@ main() {
         wait_for_db
     fi
     
-    # Run migrations (temporarily disabled due to Alembic revision conflicts)
-    # run_migrations
+    # Create database tables
+    create_tables
     
     # Create initial data
     create_initial_data
