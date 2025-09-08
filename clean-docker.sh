@@ -1,31 +1,37 @@
 #!/bin/bash
-# Nuclear Docker cleanup - removes EVERYTHING
-echo "🚨 NUCLEAR Docker cleanup - this will remove EVERYTHING!"
+# Safe Docker cleanup - removes everything EXCEPT database volumes
+echo "🧹 Safe Docker cleanup - preserves database!"
 echo "This will delete:"
 echo "- All stopped containers"
 echo "- All unused images" 
-echo "- All unused volumes (INCLUDING DATABASE!)"
-echo "- All unused networks"
 echo "- All build cache"
+echo "- Log and media volumes"
+echo "- All unused networks"
 echo ""
-read -p "Are you sure? (y/N): " -n 1 -r
+echo "🛡️  PRESERVES: postgres_data_prod, redis_data_prod"
+echo ""
+read -p "Proceed with safe cleanup? (y/N): " -n 1 -r
 echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    echo "💣 Nuking Docker..."
+    echo "🧽 Safe cleaning Docker..."
     
     # Stop everything
     sudo docker stop $(sudo docker ps -aq) 2>/dev/null || true
     
-    # Remove everything
-    sudo docker system prune -af --volumes
+    # Remove everything EXCEPT volumes
+    sudo docker system prune -af
     sudo docker image prune -af  
     sudo docker container prune -f
-    sudo docker volume prune -f
     sudo docker network prune -f
     sudo docker builder prune -af
     
-    echo "💥 Docker nuked! Everything is clean."
-    echo "ℹ️  Next build will download everything from scratch."
+    # Remove only non-database volumes
+    sudo docker volume rm kitkuhar_nginx_logs_prod 2>/dev/null || true
+    sudo docker volume rm kitkuhar_app_logs_prod 2>/dev/null || true
+    sudo docker volume rm kitkuhar_media_files_prod 2>/dev/null || true
+    
+    echo "✅ Safe cleanup completed!"
+    echo "🛡️  Database preserved: postgres_data_prod, redis_data_prod"
 else
     echo "❌ Cleanup cancelled"
 fi

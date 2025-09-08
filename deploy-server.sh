@@ -52,14 +52,20 @@ fi
 echo "🛑 Stopping existing containers..."
 sudo docker-compose down --remove-orphans || true
 
-# Aggressive cleanup - remove ALL unused Docker data
-echo "🧹 Aggressive Docker cleanup (removes ALL unused data)..."
-sudo docker system prune -af --volumes || true
+# Safe cleanup - remove unused data but preserve database volumes
+echo "🧹 Safe Docker cleanup (preserves database volumes)..."
+sudo docker system prune -af || true
 sudo docker image prune -af || true
 sudo docker container prune -f || true
 sudo docker network prune -f || true
-sudo docker volume prune -f || true
 sudo docker builder prune -af || true
+
+# Remove only specific volumes (NOT database volumes)
+echo "🗂️ Cleaning up non-database volumes..."
+sudo docker volume rm kitkuhar_nginx_logs_prod 2>/dev/null || true
+sudo docker volume rm kitkuhar_app_logs_prod 2>/dev/null || true
+sudo docker volume rm kitkuhar_media_files_prod 2>/dev/null || true
+echo "✅ Database volumes preserved (postgres_data_prod, redis_data_prod)"
 
 # Build and start new containers
 echo "🔨 Building and starting containers..."
