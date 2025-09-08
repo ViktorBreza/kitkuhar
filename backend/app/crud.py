@@ -1,7 +1,13 @@
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import func
 from typing import List, Optional
 from app import models, schemas
+from app.cache import (
+    cached_categories, 
+    cached_tags, 
+    invalidate_categories_cache, 
+    invalidate_tags_cache
+)
 
 # -------------------------------
 # GET list of recipes with filtering
@@ -16,10 +22,11 @@ def get_recipes(
 ):
     query = db.query(models.Recipe).options(
         joinedload(models.Recipe.category),
-        joinedload(models.Recipe.tags)
+        selectinload(models.Recipe.tags),  # Better for many-to-many relationships
+        joinedload(models.Recipe.author)
     )
     if search:
-        query = query.filter(models.Recipe.title.contains(search))
+        query = query.filter(models.Recipe.title.icontains(search))  # Case-insensitive
     if category_id:
         query = query.filter(models.Recipe.category_id == category_id)
     if tag_ids:
@@ -32,15 +39,16 @@ def get_recipes(
 def get_recipe_by_id(db: Session, recipe_id: int):
     return db.query(models.Recipe).options(
         joinedload(models.Recipe.category),
-        joinedload(models.Recipe.tags),
-        joinedload(models.Recipe.ratings),
-        joinedload(models.Recipe.comments)
+        selectinload(models.Recipe.tags),
+        joinedload(models.Recipe.author),
+        selectinload(models.Recipe.ratings).joinedload(models.Rating.user),
+        selectinload(models.Recipe.comments).joinedload(models.Comment.user)
     ).filter(models.Recipe.id == recipe_id).first()
 
 # -------------------------------
 # CREATE new recipe
 # -------------------------------
-def create_recipe(db: Session, recipe: schemas.RecipeCreate):
+def create_recipe(db: Session, recipe: schemas.RecipeCreate, author_id: Optional[int] = None):
     # Process steps - can be string or list of CookingStep
     steps_data = recipe.steps
     if isinstance(recipe.steps, list):
@@ -53,7 +61,8 @@ def create_recipe(db: Session, recipe: schemas.RecipeCreate):
         ingredients=[ing.model_dump() for ing in recipe.ingredients],  # convert to list of dict
         steps=steps_data,  # can be string or list of dict
         servings=recipe.servings,
-        category_id=recipe.category_id
+        category_id=recipe.category_id,
+        author_id=author_id  # Set the author
     )
     db.add(db_recipe)
     db.commit()
@@ -70,10 +79,15 @@ def create_recipe(db: Session, recipe: schemas.RecipeCreate):
 # -------------------------------
 # UPDATE recipe
 # -------------------------------
-def update_recipe(db: Session, recipe_id: int, recipe: schemas.RecipeCreate):
+def update_recipe(db: Session, recipe_id: int, recipe: schemas.RecipeCreate, user_id: Optional[int] = None):
     db_recipe = get_recipe_by_id(db, recipe_id)
     if not db_recipe:
         return None
+
+    # Check if user is the author or admin (this should be handled at the router level)
+    if user_id and db_recipe.author_id and db_recipe.author_id != user_id:
+        # This check should be done at router level with proper authorization
+        pass
 
     # Process steps - can be string or list of CookingStep
     steps_data = recipe.steps
@@ -112,9 +126,9 @@ def delete_recipe(db: Session, recipe_id: int):
 
 def get_categories(db: Session):
     """
-    Get all categories.
+    Get all categories with caching.
     """
-    return db.query(models.Category).all()
+    return cached_categories(db)
 
 def get_category_by_id(db: Session, category_id: int):
     """
@@ -130,6 +144,7 @@ def create_category(db: Session, category: schemas.CategoryCreate):
     db.add(db_category)
     db.commit()
     db.refresh(db_category)
+    invalidate_categories_cache()  # Invalidate cache
     return db_category
 
 # -------------------------------
@@ -143,6 +158,7 @@ def update_category(db: Session, category_id: int, category: schemas.CategoryCre
     db_category.name = category.name
     db.commit()
     db.refresh(db_category)
+    invalidate_categories_cache()  # Invalidate cache
     return db_category
 
 # -------------------------------
@@ -155,6 +171,7 @@ def delete_category(db: Session, category_id: int):
     
     db.delete(db_category)
     db.commit()
+    invalidate_categories_cache()  # Invalidate cache
     return True
 
 # ==========================
@@ -163,9 +180,9 @@ def delete_category(db: Session, category_id: int):
 
 def get_tags(db: Session):
     """
-    Get all tags.
+    Get all tags with caching.
     """
-    return db.query(models.Tag).all()
+    return cached_tags(db)
 
 def get_tag_by_id(db: Session, tag_id: int):
     """
@@ -181,6 +198,7 @@ def create_tag(db: Session, tag: schemas.TagCreate):
     db.add(db_tag)
     db.commit()
     db.refresh(db_tag)
+    invalidate_tags_cache()  # Invalidate cache
     return db_tag
 
 # -------------------------------
@@ -194,6 +212,7 @@ def update_tag(db: Session, tag_id: int, tag: schemas.TagCreate):
     db_tag.name = tag.name
     db.commit()
     db.refresh(db_tag)
+    invalidate_tags_cache()  # Invalidate cache
     return db_tag
 
 # -------------------------------
@@ -206,6 +225,7 @@ def delete_tag(db: Session, tag_id: int):
     
     db.delete(db_tag)
     db.commit()
+    invalidate_tags_cache()  # Invalidate cache
     return True
 
 # ==========================

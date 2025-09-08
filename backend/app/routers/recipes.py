@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from app import crud, schemas, database
+from app import crud, schemas, database, models
+from app.auth import get_current_user_optional, get_current_active_user
 from app.logger import log_database_event, log_error
 
 router = APIRouter(prefix="/api/recipes", tags=["recipes"])
@@ -29,15 +30,34 @@ def read_recipes(
 # CREATE: add new recipe
 # -------------------------------
 @router.post("/", response_model=schemas.Recipe)
-def create_recipe(recipe: schemas.RecipeCreate, db: Session = Depends(get_db)):
+def create_recipe(
+    recipe: schemas.RecipeCreate, 
+    db: Session = Depends(get_db),
+    current_user: Optional[models.User] = Depends(get_current_user_optional)
+):
     """
     Creates new recipe with category and tags.
     """
     try:
-        # Could add check for existence of category_id and tag_ids
-        db_recipe = crud.create_recipe(db, recipe)
+        # Verify category exists
+        category = crud.get_category_by_id(db, recipe.category_id)
+        if not category:
+            raise HTTPException(status_code=400, detail="Category not found")
+        
+        # Verify tags exist
+        if recipe.tags:
+            existing_tags = crud.get_tags(db)
+            existing_tag_ids = {tag.id for tag in existing_tags}
+            invalid_tags = set(recipe.tags) - existing_tag_ids
+            if invalid_tags:
+                raise HTTPException(status_code=400, detail=f"Tags not found: {invalid_tags}")
+        
+        author_id = current_user.id if current_user else None
+        db_recipe = crud.create_recipe(db, recipe, author_id)
         log_database_event("create", "recipe", db_recipe.id)
         return db_recipe
+    except HTTPException:
+        raise
     except Exception as e:
         log_error(e, "create_recipe")
         raise HTTPException(status_code=500, detail="Failed to create recipe")
@@ -56,9 +76,38 @@ def read_recipe(recipe_id: int, db: Session = Depends(get_db)):
 # UPDATE: update recipe
 # -------------------------------
 @router.put("/{recipe_id}", response_model=schemas.Recipe)
-def update_recipe(recipe_id: int, recipe: schemas.RecipeCreate, db: Session = Depends(get_db)):
+def update_recipe(
+    recipe_id: int, 
+    recipe: schemas.RecipeCreate, 
+    db: Session = Depends(get_db),
+    current_user: Optional[models.User] = Depends(get_current_user_optional)
+):
     try:
-        db_recipe = crud.update_recipe(db, recipe_id, recipe)
+        # Get existing recipe to check ownership
+        existing_recipe = crud.get_recipe_by_id(db, recipe_id)
+        if not existing_recipe:
+            raise HTTPException(status_code=404, detail="Recipe not found")
+        
+        # Check if user can edit this recipe (author or admin)
+        if current_user and existing_recipe.author_id:
+            if existing_recipe.author_id != current_user.id and not current_user.is_admin:
+                raise HTTPException(status_code=403, detail="Not authorized to edit this recipe")
+        
+        # Verify category exists
+        category = crud.get_category_by_id(db, recipe.category_id)
+        if not category:
+            raise HTTPException(status_code=400, detail="Category not found")
+        
+        # Verify tags exist
+        if recipe.tags:
+            existing_tags = crud.get_tags(db)
+            existing_tag_ids = {tag.id for tag in existing_tags}
+            invalid_tags = set(recipe.tags) - existing_tag_ids
+            if invalid_tags:
+                raise HTTPException(status_code=400, detail=f"Tags not found: {invalid_tags}")
+        
+        user_id = current_user.id if current_user else None
+        db_recipe = crud.update_recipe(db, recipe_id, recipe, user_id)
         if not db_recipe:
             raise HTTPException(status_code=404, detail="Recipe not found")
         log_database_event("update", "recipe", recipe_id)

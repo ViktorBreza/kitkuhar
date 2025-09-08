@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field, validator
 from typing import List, Optional, Union, Any
 from datetime import datetime
 
@@ -33,9 +33,9 @@ class Category(CategoryBase):
 # Ingredient structure
 # -------------------------------
 class Ingredient(BaseModel):
-    name: str
-    quantity: float
-    unit: str  # for example: "g", "kg", "tbsp", "tsp", "ml"
+    name: str = Field(..., min_length=1, max_length=100, description="Ingredient name")
+    quantity: float = Field(..., gt=0, description="Quantity must be positive")
+    unit: str = Field(..., min_length=1, max_length=20, description="Unit of measurement")
 
 # -------------------------------
 # Media for steps
@@ -60,13 +60,19 @@ class CookingStep(BaseModel):
 # Recipes
 # -------------------------------
 class RecipeBase(BaseModel):
-    title: str
-    description: Optional[str] = None
-    ingredients: List[Ingredient]
-    steps: Union[str, List[CookingStep]]  # Support for old and new format
-    servings: int
-    category_id: int
-    tags: Optional[List[int]] = []
+    title: str = Field(..., min_length=1, max_length=200, description="Recipe title")
+    description: Optional[str] = Field(None, max_length=1000, description="Recipe description")
+    ingredients: List[Ingredient] = Field(..., min_items=1, description="List of ingredients")
+    steps: Union[str, List[CookingStep]] = Field(..., description="Cooking steps")
+    servings: int = Field(..., gt=0, le=50, description="Number of servings")
+    category_id: int = Field(..., gt=0, description="Category ID must be positive")
+    tags: Optional[List[int]] = Field(default=[], description="List of tag IDs")
+    
+    @validator('tags')
+    def validate_tags(cls, v):
+        if v and any(tag_id <= 0 for tag_id in v):
+            raise ValueError('All tag IDs must be positive')
+        return v
 
 class RecipeCreate(RecipeBase):
     pass
@@ -114,12 +120,12 @@ class UserLogin(BaseModel):
 # Ratings and comments
 # -------------------------------
 class RatingBase(BaseModel):
-    rating: int  # from 1 to 5
+    rating: int = Field(..., ge=1, le=5, description="Rating from 1 to 5")
 
 class RatingCreate(BaseModel):
-    recipe_id: int
-    rating: int  # from 1 to 5
-    session_id: Optional[str] = None  # for anonymous users
+    recipe_id: int = Field(..., gt=0, description="Recipe ID must be positive")
+    rating: int = Field(..., ge=1, le=5, description="Rating from 1 to 5")
+    session_id: Optional[str] = Field(None, min_length=1, max_length=100, description="Session ID for anonymous users")
 
 class Rating(RatingBase):
     id: int
@@ -134,12 +140,12 @@ class Rating(RatingBase):
         from_attributes = True
 
 class CommentBase(BaseModel):
-    content: str
-    author_name: str
+    content: str = Field(..., min_length=1, max_length=1000, description="Comment content")
+    author_name: str = Field(..., min_length=1, max_length=50, description="Author name")
 
 class CommentCreate(CommentBase):
-    recipe_id: int
-    session_id: Optional[str] = None  # for anonymous users
+    recipe_id: int = Field(..., gt=0, description="Recipe ID must be positive")
+    session_id: Optional[str] = Field(None, min_length=1, max_length=100, description="Session ID for anonymous users")
 
 class Comment(CommentBase):
     id: int

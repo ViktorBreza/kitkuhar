@@ -94,7 +94,11 @@
       "Read(/C:\\Users\\baktorz\\Desktop\\kitkuhar\\frontend\\src/**)",
       "Read(/C:\\Users\\baktorz\\Desktop\\kitkuhar\\frontend\\src\\components/**)",
       "Read(/C:\\Users\\baktorz\\Desktop\\kitkuhar\\frontend\\src\\components/**)",
-      "Read(/C:\\Users\\baktorz\\Desktop\\kitkuhar\\frontend\\src\\components/**)"
+      "Read(/C:\\Users\\baktorz\\Desktop\\kitkuhar\\frontend\\src\\components/**)",
+      "Read(//c/**)",
+      "Bash(npm run lint)",
+      "Bash(npm run type-check:*)",
+      "Bash(net start:*)"
     ],
     "deny": [],
     "ask": []

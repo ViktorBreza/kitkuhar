@@ -8,6 +8,7 @@ starlette==0.47.2
 # Database
 SQLAlchemy==2.0.43
 psycopg2-binary==2.9.10
+alembic==1.13.3
 
 # Authentication & Security
 python-jose[cryptography]==3.5.0
@@ -25,6 +26,10 @@ python-multipart==0.0.20
 
 # System Monitoring
 psutil==7.0.0
+
+# Rate Limiting
+slowapi==0.1.9
+redis==5.1.1
 
 # Testing
 pytest==8.3.3
