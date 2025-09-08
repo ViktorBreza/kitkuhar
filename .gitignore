@@ -17,8 +17,8 @@ frontend/.pnp.js
 # Testing
 coverage/
 
-# Environment variables
-.env
+# Environment variables (commented out for production deployment)
+# .env
 .env.local
 .env.development.local
 .env.test.local
