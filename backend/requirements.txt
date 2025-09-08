@@ -8,7 +8,6 @@ starlette==0.47.2
 # Database
 SQLAlchemy==2.0.43
 psycopg2-binary==2.9.10
-alembic==1.13.3
 
 # Authentication & Security
 python-jose[cryptography]==3.5.0
