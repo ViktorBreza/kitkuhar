@@ -101,8 +101,8 @@ main() {
         wait_for_db
     fi
     
-    # Run migrations
-    run_migrations
+    # Run migrations (temporarily disabled due to Alembic revision conflicts)
+    # run_migrations
     
     # Create initial data
     create_initial_data
