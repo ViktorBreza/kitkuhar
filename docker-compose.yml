@@ -1,126 +1,180 @@
 
 services:
-  # PostgreSQL Database
+  # Production PostgreSQL Database
   database:
     image: postgres:15-alpine
-    container_name: kitkuhar-db
+    container_name: kitkuhar-db-prod
     restart: unless-stopped
     environment:
-      POSTGRES_DB: kitkuhar
-      POSTGRES_USER: kitkuhar_user
-      POSTGRES_PASSWORD: kitkuhar_password_2024
+      POSTGRES_DB: ${POSTGRES_DB:-kitkuhar}
+      POSTGRES_USER: ${POSTGRES_USER:-kitkuhar_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_prod:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
       - ./database/backups:/backups
-    # Port removed for production security - access via container network only
     networks:
-      - kitkuhar-network
+      - kitkuhar-prod-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U kitkuhar_user -d kitkuhar"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-kitkuhar_user} -d ${POSTGRES_DB:-kitkuhar}"]
       interval: 10s
       timeout: 5s
       retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
-  # Backend (FastAPI)
+  # Production Redis for caching and rate limiting
+  redis:
+    image: redis:7-alpine
+    container_name: kitkuhar-redis-prod
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    volumes:
+      - redis_data_prod:/data
+    networks:
+      - kitkuhar-prod-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Production Backend (FastAPI)
   backend:
     build: 
       context: .
       dockerfile: backend/Dockerfile
-    container_name: kitkuhar-backend
+    container_name: kitkuhar-backend-prod
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql://kitkuhar_user:kitkuhar_password_2024@database:5432/kitkuhar
-      SECRET_KEY: kitkuhar_secret_key_2024_very_secure
+      DATABASE_URL: postgresql://${POSTGRES_USER:-kitkuhar_user}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB:-kitkuhar}
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      SECRET_KEY: ${SECRET_KEY}
       ALGORITHM: HS256
-      ACCESS_TOKEN_EXPIRE_MINUTES: 30
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      ENVIRONMENT: production
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+      DATABASE_HOST: database
+      DATABASE_PORT: 5432
+      # Admin user creation (optional)
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
     volumes:
-      - media_files:/app/media
-      - ./logs:/app/logs
-    ports:
-      - "8000:8000"
+      - media_files_prod:/app/media
+      - app_logs_prod:/app/logs
+      - ./database/backups:/backups:ro
     networks:
-      - kitkuhar-network
+      - kitkuhar-prod-network
     depends_on:
       database:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/monitoring/health"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
 
-  # Frontend (Next.js SSR)
+  # Production Frontend (React)
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: kitkuhar-frontend
+      args:
+        - REACT_APP_API_URL=/api
+        - NODE_ENV=production
+    container_name: kitkuhar-frontend-prod
     restart: unless-stopped
-    environment:
-      NEXT_PUBLIC_API_BASE_URL: http://backend:8000
-      NODE_ENV: production
-    ports:
-      - "3000:3000"
     networks:
-      - kitkuhar-network
+      - kitkuhar-prod-network
     depends_on:
       - backend
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
-  # Database Management (pgAdmin)
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: kitkuhar-pgadmin
-    restart: unless-stopped
-    environment:
-      PGADMIN_DEFAULT_EMAIL: brezaviktor@gmail.com
-      PGADMIN_DEFAULT_PASSWORD: kitkuharadminzalupa
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
-      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
-      SCRIPT_NAME: /db-admin
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-    ports:
-      - "5050:80"
-    networks:
-      - kitkuhar-network
-    depends_on:
-      database:
-        condition: service_healthy
-
-  # Reverse Proxy (Nginx)
+  # Nginx Reverse Proxy
   nginx:
     image: nginx:alpine
-    container_name: kitkuhar-proxy
+    container_name: kitkuhar-nginx-prod
     restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/nginx.nextjs.conf:/etc/nginx/nginx.conf
-      - ./nginx/ssl:/etc/nginx/ssl
-      - media_files:/var/www/media
-      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - media_files_prod:/var/www/media:ro
+      - nginx_logs_prod:/var/log/nginx
     networks:
-      - kitkuhar-network
+      - kitkuhar-prod-network
     depends_on:
       - frontend
       - backend
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
 
 volumes:
-  postgres_data:
+  postgres_data_prod:
     driver: local
-  media_files:
+  redis_data_prod:
     driver: local
-  pgadmin_data:
+  media_files_prod:
+    driver: local
+  app_logs_prod:
+    driver: local
+  nginx_logs_prod:
     driver: local
 
 networks:
-  kitkuhar-network:
+  kitkuhar-prod-network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
