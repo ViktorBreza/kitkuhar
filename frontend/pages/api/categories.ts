@@ -5,13 +5,16 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { method } = req;
+  const { method, url } = req;
   const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://backend:8000';
   
   try {
+    // Forward the exact path to backend (including trailing slash if present)
+    const backendPath = url?.startsWith('/api') ? url.replace('/api', '') : url;
+    
     const response = await axios({
       method: method as any,
-      url: `${backendUrl}/categories/`,
+      url: `${backendUrl}${backendPath}`,
       headers: req.headers,
       data: req.body,
     });

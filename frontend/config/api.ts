@@ -1,29 +1,29 @@
 // API Configuration - use environment variable or default to empty string (nginx handles /api prefix)
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
-// API Endpoints
+// API Endpoints - relative to baseURL (without /api prefix since apiClient adds it)
 export const API_ENDPOINTS = {
   // Auth
-  AUTH_LOGIN: `/api/auth/login`,
-  AUTH_REGISTER: `/api/auth/register`,
-  AUTH_ME: `/api/auth/me`,
+  AUTH_LOGIN: `/auth/login`,
+  AUTH_REGISTER: `/auth/register`,
+  AUTH_ME: `/auth/me`,
   
   // Recipes  
-  RECIPES: `/api/recipes`,
-  RECIPE_DELETE: (id: number) => `/api/recipes/${id}`,
+  RECIPES: `/recipes`,
+  RECIPE_DELETE: (id: number) => `/recipes/${id}`,
   
   // Categories - add trailing slash to match backend routing
-  CATEGORIES: `/api/categories/`,
+  CATEGORIES: `/categories/`,
   
   // Tags - add trailing slash to match backend routing
-  TAGS: `/api/tags/`,
+  TAGS: `/tags/`,
   
   // Media
-  MEDIA_UPLOAD: `/api/media`,
+  MEDIA_UPLOAD: `/media`,
   
   // Ratings
-  RATINGS: `/api/ratings`,
+  RATINGS: `/ratings`,
   
   // Comments
-  COMMENTS: `/api/comments`,
+  COMMENTS: `/comments`,
 };
