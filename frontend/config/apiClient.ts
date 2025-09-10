@@ -10,7 +10,7 @@ class ApiClient {
   private baseURL: string;
   private defaultHeaders: HeadersInit;
 
-  constructor(baseURL: string = process.env.NEXT_PUBLIC_API_URL || '/api') {
+  constructor(baseURL: string = process.env.NEXT_PUBLIC_API_URL || '') {
     this.baseURL = baseURL;
     this.defaultHeaders = {
       'Content-Type': 'application/json',

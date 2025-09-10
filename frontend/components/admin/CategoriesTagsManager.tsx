@@ -46,15 +46,19 @@ const CategoriesTagsManager: React.FC = () => {
     if (!newCategoryName.trim()) return;
     
     setLoading(true);
+    setError('');
     try {
-      await axios.post(API_ENDPOINTS.CATEGORIES, 
+      console.log('Creating category:', newCategoryName);
+      const response = await axios.post(API_ENDPOINTS.CATEGORIES, 
         { name: newCategoryName },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      console.log('Category created:', response.data);
       setNewCategoryName('');
-      loadData();
+      await loadData();
     } catch (err) {
-      setError('Помилка створення категорії');
+      console.error('Error creating category:', err);
+      setError(`Помилка створення категорії: ${err.response?.data?.detail || err.message}`);
     } finally {
       setLoading(false);
     }
@@ -99,15 +103,19 @@ const CategoriesTagsManager: React.FC = () => {
     if (!newTagName.trim()) return;
     
     setLoading(true);
+    setError('');
     try {
-      await axios.post(API_ENDPOINTS.TAGS, 
+      console.log('Creating tag:', newTagName);
+      const response = await axios.post(API_ENDPOINTS.TAGS, 
         { name: newTagName },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      console.log('Tag created:', response.data);
       setNewTagName('');
-      loadData();
+      await loadData();
     } catch (err) {
-      setError('Помилка створення тегу');
+      console.error('Error creating tag:', err);
+      setError(`Помилка створення тегу: ${err.response?.data?.detail || err.message}`);
     } finally {
       setLoading(false);
     }
