@@ -9,7 +9,7 @@ export const API_ENDPOINTS = {
   AUTH_ME: `${API_BASE_URL}/auth/me`,
   
   // Recipes  
-  RECIPES: `/recipes/`,
+  RECIPES: `${API_BASE_URL}/recipes`,
   RECIPE_DELETE: (id: number) => `${API_BASE_URL}/recipes/${id}`,
   
   // Categories

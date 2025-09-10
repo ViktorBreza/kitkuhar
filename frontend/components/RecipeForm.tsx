@@ -31,8 +31,8 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ recipeId }) => {
     const loadData = async () => {
       try {
         const [categoriesRes, tagsRes] = await Promise.all([
-          axios.get(`${API_ENDPOINTS.CATEGORIES}/`),
-          axios.get(`${API_ENDPOINTS.TAGS}/`)
+          axios.get(`${API_ENDPOINTS.CATEGORIES}`),
+          axios.get(`${API_ENDPOINTS.TAGS}`)
         ]);
         setCategories(categoriesRes.data);
         setTags(tagsRes.data);
@@ -55,6 +55,11 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ recipeId }) => {
             recipeData.ingredients = [{ name: '', quantity: 1, unit: 'шт' }];
           }
           
+          // Ensure tags is array
+          if (!Array.isArray(recipeData.tags)) {
+            recipeData.tags = [];
+          }
+          
           setRecipe(recipeData);
         } catch (err) {
           setError('Не вдалося завантажити рецепт');
@@ -68,7 +73,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ recipeId }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!recipe.title || !recipe.ingredients || recipe.ingredients.length === 0) {
+    if (!recipe.title || !recipe.ingredients || recipe.ingredients.length === 0 || !recipe.category) {
       setError('Будь ласка, заповніть всі обов\'язкові поля');
       return;
     }
@@ -78,9 +83,13 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ recipeId }) => {
 
     try {
       const recipeData = {
-        ...recipe,
+        title: recipe.title,
+        description: recipe.description,
         ingredients: recipe.ingredients?.filter(ing => ing.name.trim() !== ''),
-        steps: typeof recipe.steps === 'string' ? recipe.steps : recipe.steps?.join('\n') || ''
+        steps: typeof recipe.steps === 'string' ? recipe.steps : recipe.steps?.join('\n') || '',
+        servings: recipe.servings,
+        category_id: recipe.category?.id,
+        tags: recipe.tags?.map(tag => tag.id) || []
       };
 
       if (recipeId) {
@@ -88,7 +97,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ recipeId }) => {
           headers: { Authorization: `Bearer ${token}` }
         });
       } else {
-        await axios.post(`${API_ENDPOINTS.RECIPES}/`, recipeData, {
+        await axios.post(API_ENDPOINTS.RECIPES, recipeData, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }
@@ -178,6 +187,59 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ recipeId }) => {
               value={recipe.servings || 1}
               onChange={(e) => setRecipe({ ...recipe, servings: parseInt(e.target.value) })}
             />
+          </div>
+
+          <div className="mb-3">
+            <label htmlFor="category" className="form-label">
+              Категорія *
+            </label>
+            <select
+              className="form-control"
+              id="category"
+              value={recipe.category?.id || ''}
+              onChange={(e) => {
+                const categoryId = parseInt(e.target.value);
+                const selectedCategory = categories.find(c => c.id === categoryId);
+                setRecipe({ ...recipe, category: selectedCategory || null });
+              }}
+              required
+            >
+              <option value="">Оберіть категорію</option>
+              {categories.map(category => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="mb-3">
+            <label htmlFor="tags" className="form-label">
+              Теги
+            </label>
+            <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid #ced4da', borderRadius: '0.25rem', padding: '0.5rem' }}>
+              {tags.map(tag => (
+                <div key={tag.id} className="form-check">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    id={`tag-${tag.id}`}
+                    checked={recipe.tags?.some(t => t.id === tag.id) || false}
+                    onChange={(e) => {
+                      const currentTags = recipe.tags || [];
+                      if (e.target.checked) {
+                        setRecipe({ ...recipe, tags: [...currentTags, tag] });
+                      } else {
+                        setRecipe({ ...recipe, tags: currentTags.filter(t => t.id !== tag.id) });
+                      }
+                    }}
+                  />
+                  <label className="form-check-label" htmlFor={`tag-${tag.id}`}>
+                    {tag.name}
+                  </label>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="mb-3">
