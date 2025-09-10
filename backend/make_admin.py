@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """
 Script to make a user admin
-Usage: python make_admin.py
+Usage: 
+  - From host: sudo docker exec -it kitkuhar-backend-1 python make_admin.py
+  - From container: python make_admin.py
 """
 
 import sys
