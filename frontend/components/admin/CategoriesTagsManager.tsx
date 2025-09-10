@@ -121,7 +121,7 @@ const CategoriesTagsManager: React.FC = () => {
       console.log('Tag created:', response.data);
       setNewTagName('');
       await loadData();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error creating tag:', err);
       setError(`Помилка створення тегу: ${err.response?.data?.detail || err.message}`);
     } finally {
