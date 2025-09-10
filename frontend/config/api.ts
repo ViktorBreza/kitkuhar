@@ -12,11 +12,11 @@ export const API_ENDPOINTS = {
   RECIPES: `/api/recipes`,
   RECIPE_DELETE: (id: number) => `/api/recipes/${id}`,
   
-  // Categories
-  CATEGORIES: `/api/categories`,
+  // Categories - add trailing slash to match backend routing
+  CATEGORIES: `/api/categories/`,
   
-  // Tags
-  TAGS: `/api/tags`,
+  // Tags - add trailing slash to match backend routing
+  TAGS: `/api/tags/`,
   
   // Media
   MEDIA_UPLOAD: `/api/media`,
