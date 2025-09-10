@@ -53,3 +53,4 @@ Thumbs.db
 # Media uploads (keep structure, ignore content)
 backend/media/*
 !backend/media/.gitkeep
+frontend/.next/
