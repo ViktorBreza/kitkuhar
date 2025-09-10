@@ -103,7 +103,9 @@
       "Bash(git branch:*)",
       "Bash(npx tsc:*)",
       "Bash(npm ls:*)",
-      "Bash(scp:*)"
+      "Bash(scp:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ],
     "deny": [],
     "ask": []

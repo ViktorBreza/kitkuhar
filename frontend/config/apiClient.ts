@@ -21,10 +21,7 @@ class ApiClient {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
-    // Don't add baseURL if endpoint already starts with /api or is absolute
-    const url = endpoint.startsWith('/api') || endpoint.startsWith('http') 
-      ? endpoint 
-      : `${this.baseURL}${endpoint}`;
+    const url = `${this.baseURL}${endpoint}`;
     const method = options.method || 'GET';
     
     // Add authorization token if exists (only in browser)

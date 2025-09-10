@@ -1,29 +1,29 @@
-// API Configuration - use environment variable or default to empty string (nginx handles /api prefix)
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
+// API Configuration - use environment variable or default to /api
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
-// API Endpoints - all use full paths since we have Pages API routes
+// API Endpoints - exactly as in stable version
 export const API_ENDPOINTS = {
-  // Auth 
-  AUTH_LOGIN: `/api/auth/login`,
-  AUTH_REGISTER: `/api/auth/register`,
-  AUTH_ME: `/api/auth/me`,
+  // Auth
+  AUTH_LOGIN: `${API_BASE_URL}/auth/login`,
+  AUTH_REGISTER: `${API_BASE_URL}/auth/register`,
+  AUTH_ME: `${API_BASE_URL}/auth/me`,
   
-  // Recipes
-  RECIPES: `/api/recipes`,
-  RECIPE_DELETE: (id: number) => `/api/recipes/${id}`,
+  // Recipes - direct path without API_BASE_URL (as in stable)
+  RECIPES: `/recipes/`,
+  RECIPE_DELETE: (id: number) => `${API_BASE_URL}/recipes/${id}`,
   
-  // Categories - add trailing slash to match backend routing
-  CATEGORIES: `/api/categories/`,
+  // Categories
+  CATEGORIES: `${API_BASE_URL}/categories`,
   
-  // Tags - add trailing slash to match backend routing  
-  TAGS: `/api/tags/`,
+  // Tags  
+  TAGS: `${API_BASE_URL}/tags`,
   
   // Media
-  MEDIA_UPLOAD: `/api/media`,
+  MEDIA_UPLOAD: `${API_BASE_URL}/media`,
   
   // Ratings
-  RATINGS: `/api/ratings`,
+  RATINGS: `${API_BASE_URL}/ratings`,
   
   // Comments
-  COMMENTS: `/api/comments`,
+  COMMENTS: `${API_BASE_URL}/comments`,
 };
