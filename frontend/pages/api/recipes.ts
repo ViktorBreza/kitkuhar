@@ -11,7 +11,7 @@ export default async function handler(
   try {
     const response = await axios({
       method: method as any,
-      url: `${backendUrl}/api/recipes`,
+      url: `${backendUrl}/recipes`,
       headers: req.headers,
       data: req.body,
     });
