@@ -43,7 +43,11 @@ const CategoriesTagsManager: React.FC = () => {
 
   // Categories
   const createCategory = async () => {
-    if (!newCategoryName.trim()) return;
+    console.log('createCategory called with:', newCategoryName);
+    if (!newCategoryName.trim()) {
+      console.log('Empty category name, returning');
+      return;
+    }
     
     setLoading(true);
     setError('');
@@ -100,7 +104,11 @@ const CategoriesTagsManager: React.FC = () => {
 
   // Tags
   const createTag = async () => {
-    if (!newTagName.trim()) return;
+    console.log('createTag called with:', newTagName);
+    if (!newTagName.trim()) {
+      console.log('Empty tag name, returning');
+      return;
+    }
     
     setLoading(true);
     setError('');
