@@ -1,29 +1,29 @@
 // API Configuration - use environment variable or default to empty string (nginx handles /api prefix)
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
-// API Endpoints - mixed approach: auth uses full paths, others relative to apiClient baseURL
+// API Endpoints - all use full paths since we have Pages API routes
 export const API_ENDPOINTS = {
-  // Auth - full paths for direct fetch usage
+  // Auth 
   AUTH_LOGIN: `/api/auth/login`,
   AUTH_REGISTER: `/api/auth/register`,
   AUTH_ME: `/api/auth/me`,
   
-  // Other endpoints - relative to baseURL (apiClient adds /api prefix)
-  RECIPES: `/recipes`,
-  RECIPE_DELETE: (id: number) => `/recipes/${id}`,
+  // Recipes
+  RECIPES: `/api/recipes`,
+  RECIPE_DELETE: (id: number) => `/api/recipes/${id}`,
   
   // Categories - add trailing slash to match backend routing
-  CATEGORIES: `/categories/`,
+  CATEGORIES: `/api/categories/`,
   
-  // Tags - add trailing slash to match backend routing
-  TAGS: `/tags/`,
+  // Tags - add trailing slash to match backend routing  
+  TAGS: `/api/tags/`,
   
   // Media
-  MEDIA_UPLOAD: `/media`,
+  MEDIA_UPLOAD: `/api/media`,
   
   // Ratings
-  RATINGS: `/ratings`,
+  RATINGS: `/api/ratings`,
   
   // Comments
-  COMMENTS: `/comments`,
+  COMMENTS: `/api/comments`,
 };

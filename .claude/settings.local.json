@@ -100,7 +100,10 @@
       "Bash(npm run type-check:*)",
       "Bash(net start:*)",
       "Bash(tree:*)",
-      "Bash(git branch:*)"
+      "Bash(git branch:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm ls:*)",
+      "Bash(scp:*)"
     ],
     "deny": [],
     "ask": []

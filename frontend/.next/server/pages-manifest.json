@@ -1,0 +1,17 @@
+{
+  "/_app": "pages/_app.js",
+  "/_error": "pages/_error.js",
+  "/add-recipe": "pages/add-recipe.html",
+  "/_document": "pages/_document.js",
+  "/admin/categories-tags": "pages/admin/categories-tags.html",
+  "/api/recipes": "pages/api/recipes.js",
+  "/categories": "pages/categories.html",
+  "/": "pages/index.html",
+  "/login": "pages/login.html",
+  "/recipes": "pages/recipes.html",
+  "/register": "pages/register.html",
+  "/tags": "pages/tags.html",
+  "/recipes/[id]": "pages/recipes/[id].js",
+  "/edit-recipe/[id]": "pages/edit-recipe/[id].js",
+  "/404": "pages/404.html"
+}
