@@ -1,29 +1,29 @@
-// API Configuration - use environment variable or default to /api
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+// API Configuration - use environment variable or default to empty string (nginx handles /api prefix)
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
 // API Endpoints
 export const API_ENDPOINTS = {
   // Auth
-  AUTH_LOGIN: `${API_BASE_URL}/auth/login`,
-  AUTH_REGISTER: `${API_BASE_URL}/auth/register`,
-  AUTH_ME: `${API_BASE_URL}/auth/me`,
+  AUTH_LOGIN: `/api/auth/login`,
+  AUTH_REGISTER: `/api/auth/register`,
+  AUTH_ME: `/api/auth/me`,
   
   // Recipes  
-  RECIPES: `${API_BASE_URL}/recipes`,
-  RECIPE_DELETE: (id: number) => `${API_BASE_URL}/recipes/${id}`,
+  RECIPES: `/api/recipes`,
+  RECIPE_DELETE: (id: number) => `/api/recipes/${id}`,
   
   // Categories
-  CATEGORIES: `${API_BASE_URL}/categories`,
+  CATEGORIES: `/api/categories`,
   
   // Tags
-  TAGS: `${API_BASE_URL}/tags`,
+  TAGS: `/api/tags`,
   
   // Media
-  MEDIA_UPLOAD: `${API_BASE_URL}/media`,
+  MEDIA_UPLOAD: `/api/media`,
   
   // Ratings
-  RATINGS: `${API_BASE_URL}/ratings`,
+  RATINGS: `/api/ratings`,
   
   // Comments
-  COMMENTS: `${API_BASE_URL}/comments`,
+  COMMENTS: `/api/comments`,
 };
