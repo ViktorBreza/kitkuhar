@@ -15,7 +15,7 @@ export const API_ENDPOINTS = {
   // Categories
   CATEGORIES: `${API_BASE_URL}/categories`,
   
-  // Tags  
+  // Tags
   TAGS: `${API_BASE_URL}/tags`,
   
   // Media
