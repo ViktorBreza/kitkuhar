@@ -36,7 +36,7 @@ const CategoriesTagsManager: React.FC = () => {
       ]);
       setCategories(categoriesRes.data);
       setTags(tagsRes.data);
-    } catch (err) {
+    } catch (err: any) {
       setError('Помилка завантаження даних');
     }
   };
@@ -60,7 +60,7 @@ const CategoriesTagsManager: React.FC = () => {
       console.log('Category created:', response.data);
       setNewCategoryName('');
       await loadData();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error creating category:', err);
       setError(`Помилка створення категорії: ${err.response?.data?.detail || err.message}`);
     } finally {
@@ -79,7 +79,7 @@ const CategoriesTagsManager: React.FC = () => {
       );
       setEditingCategory(null);
       loadData();
-    } catch (err) {
+    } catch (err: any) {
       setError('Помилка оновлення категорії');
     } finally {
       setLoading(false);
@@ -95,7 +95,7 @@ const CategoriesTagsManager: React.FC = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       loadData();
-    } catch (err) {
+    } catch (err: any) {
       setError('Помилка видалення категорії');
     } finally {
       setLoading(false);
@@ -140,7 +140,7 @@ const CategoriesTagsManager: React.FC = () => {
       );
       setEditingTag(null);
       loadData();
-    } catch (err) {
+    } catch (err: any) {
       setError('Помилка оновлення тегу');
     } finally {
       setLoading(false);
@@ -156,7 +156,7 @@ const CategoriesTagsManager: React.FC = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       loadData();
-    } catch (err) {
+    } catch (err: any) {
       setError('Помилка видалення тегу');
     } finally {
       setLoading(false);
