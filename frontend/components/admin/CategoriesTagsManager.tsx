@@ -189,6 +189,12 @@ const CategoriesTagsManager: React.FC = () => {
                     placeholder="Назва нової категорії"
                     value={newCategoryName}
                     onChange={(e) => setNewCategoryName(e.target.value)}
+                    style={{ 
+                      border: '2px solid red',
+                      padding: '10px',
+                      fontSize: '16px',
+                      minWidth: '200px'
+                    }}
                   />
                   <button
                     className="btn btn-primary"
@@ -273,6 +279,12 @@ const CategoriesTagsManager: React.FC = () => {
                     placeholder="Назва нового тегу"
                     value={newTagName}
                     onChange={(e) => setNewTagName(e.target.value)}
+                    style={{ 
+                      border: '2px solid blue',
+                      padding: '10px',
+                      fontSize: '16px',
+                      minWidth: '200px'
+                    }}
                   />
                   <button
                     className="btn btn-primary"
