@@ -1,3 +1,24 @@
+# ============================================================================
+# KITKUHAR BACKEND API - FastAPI application with structured recipes
+# ============================================================================
+#
+# IMPORTANT: This is the main backend application entry point
+# 
+# Key features implemented:
+# 1. Structured recipe system with steps and media uploads
+# 2. Automatic image resizing (800x600, maintaining aspect ratio)
+# 3. Comprehensive CORS configuration for frontend integration
+# 4. JWT authentication with admin roles
+# 5. Request logging and performance monitoring
+# 6. Category and tag system for recipe organization
+#
+# ARCHITECTURE:
+# - FastAPI framework with SQLAlchemy ORM
+# - PostgreSQL database with Alembic migrations
+# - Redis for caching and sessions
+# - Media file handling with PIL for image processing
+# - Structured logging and error handling
+#
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,6 +37,9 @@ from app.exceptions import (
 import time
 import os
 
+# ============================================================================
+# FASTAPI APPLICATION - Main backend API instance
+# ============================================================================
 app = FastAPI(title="Recipe App API")
 
 # Exception handlers
@@ -74,41 +98,56 @@ async def enhanced_logging_middleware(request: Request, call_next):
     
     return response
 
-# CORS Middleware - Secure configuration
-# Get allowed origins from environment variable or use safe defaults
+# ========================================================================
+# CORS MIDDLEWARE - CRITICAL: Enables frontend-backend communication
+# ========================================================================
+#
+# IMPORTANT: This configuration allows Next.js frontend to communicate with backend
+# 
+# DEVELOPMENT FLOW:
+# 1. Frontend (localhost:3000/3001) makes request to /api/recipes
+# 2. Next.js rewrites to http://localhost:8000/api/recipes  
+# 3. This CORS config allows the request from Next.js origin
+# 4. Backend responds with proper CORS headers
+#
+# NOTE: Even with Next.js proxy, CORS is needed because the actual request
+# originates from the frontend origin, not the backend origin
+#
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "").split(",") if os.getenv("ALLOWED_ORIGINS") else []
 
-# Production and development origins
+# Production origins - live website domains
 production_origins = [
     "https://kitkuhar.com",
     "https://www.kitkuhar.com"
 ]
 
+# Development origins - all possible local development ports
 development_origins = [
-    "http://localhost:3000",
+    "http://localhost:3000",      # Default Next.js dev port
     "http://127.0.0.1:3000",
-    "http://localhost:3333",
+    "http://localhost:3001",      # Alternative Next.js port (when 3000 is busy)
+    "http://127.0.0.1:3001",
+    "http://localhost:3333",      # Additional dev ports
     "http://127.0.0.1:3333", 
     "http://localhost:8080",
     "http://127.0.0.1:8080",
     "http://localhost",
     "http://127.0.0.1",
-    "https://kitkuhar.com",
+    "https://kitkuhar.com",       # Included in dev for testing
     "https://www.kitkuhar.com",
 ]
 
-# Determine which origins to use based on environment
+# Environment-based origin selection
 environment = os.getenv("ENVIRONMENT", "development")
 if environment == "production":
-    # In production, allow both production URLs and development for testing
     origins = production_origins + development_origins + ALLOWED_ORIGINS
 else:
     origins = development_origins + production_origins + ALLOWED_ORIGINS
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # Use specific origins instead of wildcard
-    allow_credentials=True,  # Allow credentials for secure authentication
+    allow_origins=origins,        # Specific origins - more secure than wildcard
+    allow_credentials=True,       # Required for JWT authentication
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type", "Accept"],
     expose_headers=["*"],

@@ -6,6 +6,7 @@ import { Recipe } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { API_ENDPOINTS } from '@/config/api';
 import StarRating from './StarRating';
+import PortionCalculator from './PortionCalculator';
 
 interface RecipeDetailProps {
   recipeId: number;
@@ -84,21 +85,19 @@ const RecipeDetail: React.FC<RecipeDetailProps> = ({ recipeId }) => {
         </div>
       )}
 
+      {/* ================================================================ */}
+      {/* PORTION CALCULATOR - Interactive ingredient calculator */}
+      {/* ================================================================ */}
       <div className="row mb-4">
-        <div className="col-md-6">
-          <h3>Інгредієнти</h3>
-          <p><strong>Порцій:</strong> {recipe.servings}</p>
-          <ul className="list-unstyled">
-            {recipe.ingredients.map((ingredient, index) => (
-              <li key={index} className="mb-2">
-                <i className="bi bi-check-circle-fill text-success me-2"></i>
-                {ingredient.quantity} {ingredient.unit} {ingredient.name}
-              </li>
-            ))}
-          </ul>
+        <div className="col-lg-8">
+          <PortionCalculator 
+            originalServings={recipe.servings}
+            ingredients={recipe.ingredients}
+          />
         </div>
         
-        <div className="col-md-6">
+        <div className="col-lg-4">
+          {/* Recipe metadata */}
           {recipe.category && (
             <div className="mb-3">
               <strong>Категорія:</strong>
@@ -118,24 +117,81 @@ const RecipeDetail: React.FC<RecipeDetailProps> = ({ recipeId }) => {
               </div>
             </div>
           )}
+          
+          {/* Additional recipe info */}
+          <div className="card bg-light">
+            <div className="card-body">
+              <h6 className="card-title">
+                <i className="bi bi-info-circle me-2"></i>
+                Інформація про рецепт
+              </h6>
+              <p className="card-text small mb-1">
+                <strong>Оригінальних порцій:</strong> {recipe.servings}
+              </p>
+              <p className="card-text small mb-1">
+                <strong>Інгредієнтів:</strong> {recipe.ingredients.length}
+              </p>
+              <p className="card-text small mb-0">
+                <strong>Кроків приготування:</strong> {Array.isArray(recipe.steps) ? recipe.steps.length : 1}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
       <div className="mb-4">
         <h3>Інструкції</h3>
-        <ol className="list-group list-group-numbered">
+        <div className="recipe-steps">
           {Array.isArray(steps) ? (
             steps.map((step, index) => (
-              <li key={index} className="list-group-item border-0 bg-transparent">
-                {typeof step === 'string' ? step : step.description}
-              </li>
+              <div key={index} className="recipe-step card mb-3">
+                <div className="card-body">
+                  <div className="d-flex align-items-start">
+                    <div className="step-number bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style={{width: '2.5rem', height: '2.5rem', flexShrink: 0}}>
+                      {typeof step === 'object' && step.stepNumber ? step.stepNumber : index + 1}
+                    </div>
+                    <div className="step-content flex-grow-1">
+                      <p className="mb-0">{typeof step === 'string' ? step : step.description}</p>
+                      {typeof step === 'object' && step.media && step.media.length > 0 && (
+                        <div className="step-media mt-3">
+                          <div className="row">
+                            {step.media.map((media, mediaIndex) => (
+                              <div key={mediaIndex} className="col-md-6 col-lg-4 mb-2">
+                                {media.type === 'image' ? (
+                                  <img 
+                                    src={media.url} 
+                                    alt={media.alt || `Крок ${step.stepNumber}`}
+                                    className="img-fluid rounded shadow-sm"
+                                    style={{maxHeight: '200px', objectFit: 'cover', width: '100%'}}
+                                  />
+                                ) : media.type === 'video' ? (
+                                  <video 
+                                    src={media.url} 
+                                    controls 
+                                    className="w-100 rounded shadow-sm"
+                                    style={{maxHeight: '200px'}}
+                                  >
+                                    Ваш браузер не підтримує відео.
+                                  </video>
+                                ) : null}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
             ))
           ) : (
-            <li className="list-group-item border-0 bg-transparent">
-              {steps}
-            </li>
+            <div className="recipe-step card">
+              <div className="card-body">
+                <p className="mb-0">{steps}</p>
+              </div>
+            </div>
           )}
-        </ol>
+        </div>
       </div>
 
       <div className="mt-4">

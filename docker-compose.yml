@@ -110,9 +110,12 @@ services:
       dockerfile: Dockerfile
       args:
         - NEXT_PUBLIC_API_URL=/api
+        - NEXT_PUBLIC_API_BASE_URL=http://backend:8000
         - NODE_ENV=production
     container_name: kitkuhar-frontend-prod
     restart: unless-stopped
+    environment:
+      - API_BASE_URL=http://backend:8000
     networks:
       - kitkuhar-prod-network
     depends_on:

@@ -6,12 +6,13 @@ export default async function handler(
   res: NextApiResponse
 ) {
   const { method } = req;
-  const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://backend:8000';
+  // In development: localhost:8000, in production: backend:8000
+  const backendUrl = process.env.API_BASE_URL || 'http://backend:8000';
   
   try {
     const response = await axios({
       method: method as any,
-      url: `${backendUrl}/recipes`,
+      url: `${backendUrl}/api/recipes/`,
       headers: req.headers,
       data: req.body,
     });

@@ -81,12 +81,23 @@ export interface Recipe {
   title: string;
   description: string | null;
   ingredients: Ingredient[];
-  steps: string | CookingStep[]; // Support old format for backward compatibility
+  steps: CookingStep[]; // Now only structured steps
   servings: number;
   category: Category | null;
   tags: Tag[];
   ratings?: Rating[];
   comments?: Comment[];
+}
+
+// Recipe creation interface
+export interface RecipeCreate {
+  title: string;
+  description: string;
+  ingredients: Ingredient[];
+  steps: CookingStep[];
+  servings: number;
+  category_id: number;
+  tags: number[];
 }
 
 // Creation requests

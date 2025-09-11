@@ -1,3 +1,22 @@
+// ============================================================================
+// RECIPE LIST COMPONENT - Main recipe display and management
+// ============================================================================
+//
+// IMPORTANT: This component handles the main recipe listing functionality
+// 
+// Key features:
+// 1. Fetches recipes from backend via API proxy
+// 2. Displays structured recipes with steps and media
+// 3. Handles delete operations for authenticated users
+// 4. Shows categories, tags, ratings for each recipe
+// 5. Provides navigation to individual recipe details
+//
+// DATA FLOW:
+// 1. Component mounts -> fetchRecipes() -> API_ENDPOINTS.RECIPES
+// 2. API call goes through Next.js proxy -> backend
+// 3. Backend returns structured recipe data with steps
+// 4. Component renders recipe cards with all metadata
+//
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -8,24 +27,42 @@ import { API_ENDPOINTS } from '@/config/api';
 import { apiClient } from '@/config/apiClient';
 
 interface RecipeListProps {
-  onDelete?: () => void;
+  onDelete?: () => void;  // Optional callback when recipe is deleted
 }
 
+// ============================================================================
+// RECIPE LIST COMPONENT - Displays paginated recipe cards
+// ============================================================================
 const RecipeList: React.FC<RecipeListProps> = ({ onDelete }) => {
+  // Authentication state for showing edit/delete buttons
   const { isAuthenticated, token, isAdmin } = useAuth();
   const router = useRouter();
+  
+  // Component state for recipe data and UI states
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  // ========================================================================
+  // DATA FETCHING - Loads recipes from backend via API proxy
+  // ========================================================================
   const fetchRecipes = async () => {
     try {
       setLoading(true);
+      // IMPORTANT: This call goes through Next.js proxy to avoid CORS
+      // /api/recipes/ -> Next.js rewrite -> http://localhost:8000/api/recipes/
       const response = await apiClient.get<Recipe[]>(API_ENDPOINTS.RECIPES);
+      
+      // Debug logging - can be removed in production
       console.log('API response:', response);
+      console.log('API_ENDPOINTS.RECIPES:', API_ENDPOINTS.RECIPES);
+      console.log('response.data type:', typeof response.data);
+      console.log('response.data:', response.data);
+      
       if (response.error) {
         setError(response.error);
       } else {
+        // Ensure we have array data (backend should always return array)
         const recipesData = Array.isArray(response.data) ? response.data : [];
         console.log('Setting recipes:', recipesData);
         setRecipes(recipesData);

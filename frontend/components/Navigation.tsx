@@ -44,20 +44,39 @@ const Navigation: React.FC = () => {
               </Link>
               
               {isAdmin && (
-                <>
-                  <Link 
-                    href="/categories" 
-                    className={`me-3 py-2 text-dark text-decoration-none ${router.pathname.startsWith('/categories') ? 'active' : ''}`}
+                <div className="dropdown me-3">
+                  <button 
+                    className="btn btn-outline-primary dropdown-toggle" 
+                    type="button" 
+                    data-bs-toggle="dropdown" 
+                    aria-expanded="false"
                   >
-                    Категорії
-                  </Link>
-                  <Link 
-                    href="/tags" 
-                    className={`me-3 py-2 text-dark text-decoration-none ${router.pathname.startsWith('/tags') ? 'active' : ''}`}
-                  >
-                    Теги
-                  </Link>
-                </>
+                    Адмін панель
+                  </button>
+                  <ul className="dropdown-menu">
+                    <li>
+                      <Link href="/admin/recipes" className="dropdown-item">
+                        Керування рецептами
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/admin/categories-tags" className="dropdown-item">
+                        Категорії та теги
+                      </Link>
+                    </li>
+                    <li><hr className="dropdown-divider" /></li>
+                    <li>
+                      <Link href="/categories" className="dropdown-item">
+                        Переглянути категорії
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/tags" className="dropdown-item">
+                        Переглянути теги
+                      </Link>
+                    </li>
+                  </ul>
+                </div>
               )}
             </>
           )}

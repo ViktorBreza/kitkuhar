@@ -1,29 +1,64 @@
-// API Configuration - use environment variable or default to /api
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+// ============================================================================
+// API CONFIGURATION - CRITICAL: DO NOT MODIFY WITHOUT UNDERSTANDING FLOW
+// ============================================================================
+// 
+// IMPORTANT: This configuration works with Next.js rewrites in next.config.js
+// Flow: Frontend -> Next.js rewrite -> Backend
+// 
+// API_BASE_URL should be EMPTY STRING for development to use Next.js proxy
+// - Frontend makes request to: /api/recipes/
+// - Next.js rewrite forwards to: http://localhost:8000/api/recipes/
+// - If API_BASE_URL is set to backend URL, it bypasses proxy and causes CORS
+//
+// For production, set NEXT_PUBLIC_API_URL environment variable
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
-// API Endpoints
+// ============================================================================
+// API ENDPOINTS - All paths start with /api/ for Next.js rewrite matching
+// ============================================================================
+// 
+// CRITICAL: All endpoints MUST start with /api/ to match the rewrite rule
+// Next.js config rewrites /api/:path* to backend/api/:path*
+// Trailing slashes are IMPORTANT for some endpoints to avoid redirects
+//
 export const API_ENDPOINTS = {
-  // Auth
-  AUTH_LOGIN: `${API_BASE_URL}/auth/login`,
-  AUTH_REGISTER: `${API_BASE_URL}/auth/register`,
-  AUTH_ME: `${API_BASE_URL}/auth/me`,
+  // Auth 
+  AUTH_LOGIN: `/api/auth/login`,
+  AUTH_REGISTER: `/api/auth/register`,
+  AUTH_ME: `/api/auth/me`,
   
-  // Recipes  
-  RECIPES: `/recipes/`,
-  RECIPE_DELETE: (id: number) => `${API_BASE_URL}/recipes/${id}`,
+  // ========================================================================
+  // RECIPES - Main recipe CRUD operations with structured steps
+  // ========================================================================
+  RECIPES: `/api/recipes/`,  // GET: list all recipes, POST: create new recipe
+  RECIPE_DELETE: (id: number) => `/api/recipes/${id}`,  // DELETE: remove recipe by ID
+  // Individual recipe endpoint: /api/recipes/:id (GET) - handled by dynamic route
   
-  // Categories
-  CATEGORIES: `${API_BASE_URL}/categories`,
+  // ========================================================================
+  // ADMIN RECIPES - Administrative recipe management
+  // ========================================================================
+  ADMIN_RECIPES: `/api/recipes/admin`,  // GET: admin view of recipes
+  ADMIN_RECIPE_DELETE: (id: number) => `/api/recipes/admin/${id}`,  // Admin delete
+  ADMIN_RECIPE_UPDATE: (id: number) => `/api/recipes/admin/${id}`,  // Admin update
   
-  // Tags
-  TAGS: `${API_BASE_URL}/tags`,
+  // ========================================================================
+  // CATEGORIES & TAGS - Recipe classification system
+  // ========================================================================
+  CATEGORIES: `/api/categories`,  // GET: list all categories for dropdowns
+  TAGS: `/api/tags`,  // GET: list all tags for multi-select
   
-  // Media
-  MEDIA_UPLOAD: `${API_BASE_URL}/media`,
+  // ========================================================================
+  // MEDIA UPLOADS - File handling for recipe step images/videos
+  // ========================================================================
+  // IMPORTANT: These handle media for structured recipe steps
+  // Backend automatically resizes images to 800x600 maintaining aspect ratio
+  MEDIA_UPLOAD: `/api/media/upload-step-file`,  // POST: single file upload
+  MEDIA_UPLOAD_MULTIPLE: `/api/media/upload-step-files`,  // POST: multiple files
+  MEDIA_DELETE: `/api/media/delete-step-file`,  // DELETE: remove media file
   
-  // Ratings
-  RATINGS: `${API_BASE_URL}/ratings`,
-  
-  // Comments
-  COMMENTS: `${API_BASE_URL}/comments`,
+  // ========================================================================
+  // RATINGS & COMMENTS - User interaction features
+  // ========================================================================
+  RATINGS: `/api/ratings`,  // GET/POST: recipe ratings
+  COMMENTS: `/api/comments`,  // GET/POST: recipe comments
 };

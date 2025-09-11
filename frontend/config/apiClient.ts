@@ -1,3 +1,16 @@
+// ============================================================================
+// API CLIENT - CRITICAL: Centralized HTTP client for all API calls
+// ============================================================================
+//
+// IMPORTANT: This client is configured to work with Next.js rewrites
+// 
+// Key design decisions:
+// 1. baseURL = '' (empty) to use relative URLs that trigger Next.js rewrites
+// 2. DO NOT set baseURL to backend URL - this bypasses proxy and causes CORS
+// 3. All requests go through Next.js proxy: /api/* -> http://localhost:8000/api/*
+// 4. Automatic JWT token handling from localStorage
+// 5. Comprehensive error handling and logging
+//
 import { logger } from '@/utils/logger';
 
 export interface ApiResponse<T = any> {
@@ -6,11 +19,16 @@ export interface ApiResponse<T = any> {
   status: number;
 }
 
+// ============================================================================
+// HTTP CLIENT CLASS - Handles all API communication
+// ============================================================================
 class ApiClient {
   private baseURL: string;
   private defaultHeaders: HeadersInit;
 
-  constructor(baseURL: string = process.env.NEXT_PUBLIC_API_URL || '/api') {
+  // CRITICAL: baseURL must be empty string for Next.js proxy to work
+  // Setting it to backend URL will bypass proxy and cause CORS errors
+  constructor(baseURL: string = '') {
     this.baseURL = baseURL;
     this.defaultHeaders = {
       'Content-Type': 'application/json',

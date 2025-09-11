@@ -22,6 +22,7 @@ email-validator==2.2.0
 
 # File Upload & Processing
 python-multipart==0.0.20
+Pillow==10.4.0
 
 # System Monitoring
 psutil==7.0.0

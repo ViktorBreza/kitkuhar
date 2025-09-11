@@ -6,11 +6,12 @@ export default async function handler(
   res: NextApiResponse
 ) {
   const { method, url } = req;
-  const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://backend:8000';
+  // In development: localhost:8000, in production: backend:8000
+  const backendUrl = process.env.API_BASE_URL || 'http://backend:8000';
   
   try {
-    // Forward the exact path to backend (including trailing slash if present)
-    const backendPath = url?.startsWith('/api') ? url.replace('/api', '') : url;
+    // Forward the exact path to backend (keep /api prefix and add trailing slash)
+    const backendPath = url?.replace(/\/$/, '') + '/' || '/api/categories/';
     
     const response = await axios({
       method: method as any,

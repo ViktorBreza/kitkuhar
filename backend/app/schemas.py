@@ -63,7 +63,7 @@ class RecipeBase(BaseModel):
     title: str = Field(..., min_length=1, max_length=200, description="Recipe title")
     description: Optional[str] = Field(None, max_length=1000, description="Recipe description")
     ingredients: List[Ingredient] = Field(..., min_items=1, description="List of ingredients")
-    steps: Union[str, List[CookingStep]] = Field(..., description="Cooking steps")
+    steps: List[CookingStep] = Field(..., min_items=1, description="List of cooking steps")
     servings: int = Field(..., gt=0, le=50, description="Number of servings")
     category_id: int = Field(..., gt=0, description="Category ID must be positive")
     tags: Optional[List[int]] = Field(default=[], description="List of tag IDs")

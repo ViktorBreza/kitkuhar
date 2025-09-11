@@ -1,22 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import { Recipe, Category, Tag, Ingredient } from '@/types';
+import { Recipe, Category, Tag, Ingredient, CookingStep, RecipeCreate } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { API_ENDPOINTS } from '@/config/api';
+import StepManager from '@/components/recipe/StepManager';
 
 interface RecipeFormProps {
   recipeId?: number;
 }
 
 const RecipeForm: React.FC<RecipeFormProps> = ({ recipeId }) => {
-  const [recipe, setRecipe] = useState<Partial<Recipe>>({
+  const [recipe, setRecipe] = useState<Partial<RecipeCreate>>({
     title: '',
     description: '',
     ingredients: [{ name: '', quantity: 1, unit: 'шт' }],
-    steps: '',
+    steps: [{
+      id: 'step-1',
+      stepNumber: 1,
+      description: '',
+      media: []
+    }],
     servings: 1,
-    category: null,
+    category_id: 0,
     tags: []
   });
   const [categories, setCategories] = useState<Category[]>([]);
@@ -60,6 +66,27 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ recipeId }) => {
             recipeData.tags = [];
           }
           
+          // Convert legacy string steps to structured steps
+          if (typeof recipeData.steps === 'string') {
+            const stepTexts = recipeData.steps.split('\n').filter(step => step.trim());
+            recipeData.steps = stepTexts.map((stepText, index) => ({
+              id: `step-${index + 1}`,
+              stepNumber: index + 1,
+              description: stepText.trim(),
+              media: []
+            }));
+          }
+          
+          // Ensure steps is array with at least one step
+          if (!Array.isArray(recipeData.steps) || recipeData.steps.length === 0) {
+            recipeData.steps = [{
+              id: 'step-1',
+              stepNumber: 1,
+              description: '',
+              media: []
+            }];
+          }
+          
           setRecipe(recipeData);
         } catch (err) {
           setError('Не вдалося завантажити рецепт');
@@ -73,8 +100,9 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ recipeId }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!recipe.title || !recipe.ingredients || recipe.ingredients.length === 0 || !recipe.category) {
-      setError('Будь ласка, заповніть всі обов\'язкові поля');
+    if (!recipe.title || !recipe.ingredients || recipe.ingredients.length === 0 || !recipe.category || 
+        !recipe.steps || recipe.steps.length === 0 || recipe.steps.some(step => !step.description?.trim())) {
+      setError('Будь ласка, заповніть всі обов\'язкові поля та додайте хоча б один крок з описом');
       return;
     }
 
@@ -86,7 +114,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ recipeId }) => {
         title: recipe.title,
         description: recipe.description,
         ingredients: recipe.ingredients?.filter(ing => ing.name.trim() !== ''),
-        steps: typeof recipe.steps === 'string' ? recipe.steps : recipe.steps?.join('\n') || '',
+        steps: recipe.steps || [],
         servings: recipe.servings,
         category_id: recipe.category?.id,
         tags: recipe.tags?.map(tag => tag.id) || []
@@ -296,17 +324,9 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ recipeId }) => {
           </div>
 
           <div className="mb-3">
-            <label htmlFor="steps" className="form-label">
-              Інструкції з приготування *
-            </label>
-            <textarea
-              className="form-control"
-              id="steps"
-              rows={6}
-              value={typeof recipe.steps === 'string' ? recipe.steps : ''}
-              onChange={(e) => setRecipe({ ...recipe, steps: e.target.value })}
-              placeholder="Опишіть кроки приготування..."
-              required
+            <StepManager
+              steps={recipe.steps || []}
+              onChange={(steps) => setRecipe({ ...recipe, steps })}
             />
           </div>
 

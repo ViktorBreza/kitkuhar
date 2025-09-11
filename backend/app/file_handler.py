@@ -4,6 +4,8 @@ from fastapi import UploadFile, HTTPException
 from pathlib import Path
 import shutil
 from typing import List
+from PIL import Image
+import io
 
 # Base path for media files
 MEDIA_ROOT = Path("media")
@@ -20,6 +22,11 @@ ALLOWED_EXTENSIONS = ALLOWED_IMAGE_EXTENSIONS | ALLOWED_VIDEO_EXTENSIONS
 
 # Maximum file size (10MB)
 MAX_FILE_SIZE = 10 * 1024 * 1024
+
+# Image processing settings
+TARGET_WIDTH = 800
+TARGET_HEIGHT = 600
+JPEG_QUALITY = 85
 
 def get_file_type(filename: str) -> str:
     """Determines file type by extension"""
@@ -56,6 +63,48 @@ def validate_file(file: UploadFile) -> None:
                 detail=f"File too large. Maximum size: {MAX_FILE_SIZE / 1024 / 1024:.1f}MB"
             )
 
+def resize_image(image_data: bytes, target_width: int = TARGET_WIDTH, target_height: int = TARGET_HEIGHT) -> bytes:
+    """Resizes image to fit target dimensions while maintaining aspect ratio"""
+    try:
+        # Open image from bytes
+        image = Image.open(io.BytesIO(image_data))
+        
+        # Convert to RGB if needed (for PNG with transparency, etc.)
+        if image.mode in ('RGBA', 'LA', 'P'):
+            # Create white background
+            background = Image.new('RGB', image.size, (255, 255, 255))
+            if image.mode == 'P':
+                image = image.convert('RGBA')
+            background.paste(image, mask=image.split()[-1] if image.mode in ('RGBA', 'LA') else None)
+            image = background
+        elif image.mode != 'RGB':
+            image = image.convert('RGB')
+        
+        # Calculate dimensions to fit within target size while maintaining aspect ratio
+        original_width, original_height = image.size
+        aspect_ratio = original_width / original_height
+        target_aspect_ratio = target_width / target_height
+        
+        if aspect_ratio > target_aspect_ratio:
+            # Image is wider - fit by width
+            new_width = target_width
+            new_height = int(target_width / aspect_ratio)
+        else:
+            # Image is taller - fit by height
+            new_height = target_height
+            new_width = int(target_height * aspect_ratio)
+        
+        # Resize image
+        resized_image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+        
+        # Save to bytes
+        output_buffer = io.BytesIO()
+        resized_image.save(output_buffer, format='JPEG', quality=JPEG_QUALITY, optimize=True)
+        return output_buffer.getvalue()
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Image processing error: {str(e)}")
+
 async def save_recipe_step_file(file: UploadFile) -> dict:
     """Saves file for recipe step and returns information about it"""
     validate_file(file)
@@ -66,17 +115,32 @@ async def save_recipe_step_file(file: UploadFile) -> dict:
     file_path = RECIPE_STEPS_DIR / unique_filename
     
     try:
+        file_type = get_file_type(file.filename)
+        
+        # Read file data
+        file_data = await file.read()
+        
+        # Process image files - resize and convert to JPEG
+        if file_type == "image":
+            processed_data = resize_image(file_data)
+            # Change extension to .jpg for processed images
+            unique_filename = f"{uuid.uuid4()}.jpg"
+            file_path = RECIPE_STEPS_DIR / unique_filename
+        else:
+            # For video files, save as-is
+            processed_data = file_data
+        
         # Save file
         with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+            buffer.write(processed_data)
         
         # Return file information
         return {
             "filename": unique_filename,
             "original_filename": file.filename,
-            "type": get_file_type(file.filename),
+            "type": file_type,
             "url": f"/static/recipe_steps/{unique_filename}",
-            "size": file_path.stat().st_size
+            "size": len(processed_data)
         }
     
     except Exception as e:

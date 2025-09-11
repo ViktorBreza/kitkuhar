@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "cross-env NODE_NO_WARNINGS=1 next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -11,16 +11,17 @@
     "test": "echo \"No tests configured\" && exit 0"
   },
   "dependencies": {
+    "axios": "^1.11.0",
+    "bootstrap": "^5.3.7",
     "next": "^15.1.6",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1",
-    "axios": "^1.11.0",
-    "bootstrap": "^5.3.7"
+    "react-dom": "^19.1.1"
   },
   "devDependencies": {
     "@types/node": "^20.17.10",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
+    "cross-env": "^10.0.0",
     "eslint": "^8.57.1",
     "eslint-config-next": "^15.1.6",
     "typescript": "^5.7.3"

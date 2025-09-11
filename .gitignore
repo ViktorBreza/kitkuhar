@@ -54,3 +54,4 @@ Thumbs.db
 backend/media/*
 !backend/media/.gitkeep
 frontend/.next/
+nul
