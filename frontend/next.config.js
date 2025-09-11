@@ -43,6 +43,14 @@ const nextConfig = {
         // :path* captures everything after /api/ (e.g., recipes/, recipes/3, etc.)
         destination: `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/api/:path*`,
       },
+      {
+        // CRITICAL: Match any request starting with /static/ (for media files)
+        source: '/static/:path*',
+        // Forward to backend with /static/ prefix preserved
+        // This enables serving uploaded media files through the frontend
+        // WITHOUT this rule, recipe images will show 404 errors!
+        destination: `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/static/:path*`,
+      },
     ]
   },
 }

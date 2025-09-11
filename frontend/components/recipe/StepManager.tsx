@@ -10,6 +10,7 @@ interface StepManagerProps {
 
 const StepManager: React.FC<StepManagerProps> = ({ steps, onChange }) => {
   const [uploadingFiles, setUploadingFiles] = useState<{ [key: number]: boolean }>({});
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const addStep = () => {
     const newStep: CookingStep = {
@@ -213,8 +214,15 @@ const StepManager: React.FC<StepManagerProps> = ({ steps, onChange }) => {
                           <img
                             src={media.url}
                             alt={media.alt}
-                            className="img-fluid rounded"
-                            style={{ maxHeight: '150px', objectFit: 'cover', width: '100%' }}
+                            className="img-fluid rounded cursor-pointer"
+                            style={{ 
+                              maxHeight: '150px',         // CRITICAL: Limit height in container
+                              objectFit: 'contain',       // NEVER use 'cover' - it crops images!
+                              width: '100%',              // Fill container width
+                              backgroundColor: '#f8f9fa', // Gray background for transparency
+                              cursor: 'pointer'           // Indicate clickable for modal
+                            }}
+                            onClick={() => setSelectedImage(media.url)} // Open modal with this image
                           />
                         ) : (
                           <video
@@ -255,6 +263,41 @@ const StepManager: React.FC<StepManagerProps> = ({ steps, onChange }) => {
           >
             Додати перший крок
           </button>
+        </div>
+      )}
+
+      {/* ================================================================ */}
+      {/* MODAL: Image zoom functionality - DO NOT MODIFY STRUCTURE! */}
+      {/* ================================================================ */}
+      {selectedImage && (
+        <div 
+          className="modal fade show d-block" 
+          style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+          onClick={() => setSelectedImage(null)} // Close on backdrop click
+        >
+          <div className="modal-dialog modal-lg modal-dialog-centered"> {/* modal-lg = not full screen */}
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Перегляд зображення</h5>
+                <button 
+                  type="button" 
+                  className="btn-close" 
+                  onClick={() => setSelectedImage(null)} // Close on X button
+                ></button>
+              </div>
+              <div className="modal-body text-center">
+                <img 
+                  src={selectedImage} 
+                  alt="Збільшене зображення" 
+                  className="img-fluid"
+                  style={{ 
+                    maxHeight: '70vh',      // CRITICAL: 70% viewport height - not full screen
+                    objectFit: 'contain'    // NEVER use 'cover' here either
+                  }}
+                />
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

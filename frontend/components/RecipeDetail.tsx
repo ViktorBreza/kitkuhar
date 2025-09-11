@@ -16,6 +16,7 @@ const RecipeDetail: React.FC<RecipeDetailProps> = ({ recipeId }) => {
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const { isAuthenticated, isAdmin } = useAuth();
   const router = useRouter();
 
@@ -162,7 +163,14 @@ const RecipeDetail: React.FC<RecipeDetailProps> = ({ recipeId }) => {
                                     src={media.url} 
                                     alt={media.alt || `Крок ${step.stepNumber}`}
                                     className="img-fluid rounded shadow-sm"
-                                    style={{maxHeight: '200px', objectFit: 'cover', width: '100%'}}
+                                    style={{
+                                      maxHeight: '200px',         // CRITICAL: Limit height in recipe view
+                                      objectFit: 'contain',       // NEVER use 'cover' - it crops images!
+                                      width: '100%',              // Fill container width
+                                      backgroundColor: '#f8f9fa', // Gray background for transparency
+                                      cursor: 'pointer'           // Indicate clickable for modal
+                                    }}
+                                    onClick={() => setSelectedImage(media.url)} // Open modal with this image
                                   />
                                 ) : media.type === 'video' ? (
                                   <video 
@@ -199,6 +207,41 @@ const RecipeDetail: React.FC<RecipeDetailProps> = ({ recipeId }) => {
           ← Назад до рецептів
         </Link>
       </div>
+
+      {/* ================================================================ */}
+      {/* MODAL: Image zoom functionality - IDENTICAL to StepManager! */}
+      {/* ================================================================ */}
+      {selectedImage && (
+        <div 
+          className="modal fade show d-block" 
+          style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+          onClick={() => setSelectedImage(null)} // Close on backdrop click
+        >
+          <div className="modal-dialog modal-lg modal-dialog-centered"> {/* modal-lg = not full screen */}
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Перегляд зображення</h5>
+                <button 
+                  type="button" 
+                  className="btn-close" 
+                  onClick={() => setSelectedImage(null)} // Close on X button
+                ></button>
+              </div>
+              <div className="modal-body text-center">
+                <img 
+                  src={selectedImage} 
+                  alt="Збільшене зображення" 
+                  className="img-fluid"
+                  style={{ 
+                    maxHeight: '70vh',      // CRITICAL: 70% viewport height - not full screen
+                    objectFit: 'contain'    // NEVER use 'cover' here either
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
