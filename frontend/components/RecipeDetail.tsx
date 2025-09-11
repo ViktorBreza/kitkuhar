@@ -56,9 +56,8 @@ const RecipeDetail: React.FC<RecipeDetailProps> = ({ recipeId }) => {
     );
   }
 
-  const steps = typeof recipe.steps === 'string' 
-    ? recipe.steps.split('\n').filter(step => step.trim())
-    : recipe.steps;
+  // Steps are now always structured CookingStep array
+  const steps = recipe.steps;
 
   return (
     <div className="recipe-detail">
@@ -133,7 +132,7 @@ const RecipeDetail: React.FC<RecipeDetailProps> = ({ recipeId }) => {
                 <strong>Інгредієнтів:</strong> {recipe.ingredients.length}
               </p>
               <p className="card-text small mb-0">
-                <strong>Кроків приготування:</strong> {Array.isArray(recipe.steps) ? recipe.steps.length : 1}
+                <strong>Кроків приготування:</strong> {recipe.steps.length}
               </p>
             </div>
           </div>
@@ -143,62 +142,54 @@ const RecipeDetail: React.FC<RecipeDetailProps> = ({ recipeId }) => {
       <div className="mb-4">
         <h3>Інструкції</h3>
         <div className="recipe-steps">
-          {Array.isArray(steps) ? (
-            steps.map((step, index) => (
-              <div key={index} className="recipe-step card mb-3">
-                <div className="card-body">
-                  <div className="d-flex align-items-start">
-                    <div className="step-number bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style={{width: '2.5rem', height: '2.5rem', flexShrink: 0}}>
-                      {typeof step === 'object' && step.stepNumber ? step.stepNumber : index + 1}
-                    </div>
-                    <div className="step-content flex-grow-1">
-                      <p className="mb-0">{typeof step === 'string' ? step : step.description}</p>
-                      {typeof step === 'object' && step.media && step.media.length > 0 && (
-                        <div className="step-media mt-3">
-                          <div className="row">
-                            {step.media.map((media, mediaIndex) => (
-                              <div key={mediaIndex} className="col-md-6 col-lg-4 mb-2">
-                                {media.type === 'image' ? (
-                                  <img 
-                                    src={media.url} 
-                                    alt={media.alt || `Крок ${step.stepNumber}`}
-                                    className="img-fluid rounded shadow-sm"
-                                    style={{
-                                      maxHeight: '200px',         // CRITICAL: Limit height in recipe view
-                                      objectFit: 'contain',       // NEVER use 'cover' - it crops images!
-                                      width: '100%',              // Fill container width
-                                      backgroundColor: '#f8f9fa', // Gray background for transparency
-                                      cursor: 'pointer'           // Indicate clickable for modal
-                                    }}
-                                    onClick={() => setSelectedImage(media.url)} // Open modal with this image
-                                  />
-                                ) : media.type === 'video' ? (
-                                  <video 
-                                    src={media.url} 
-                                    controls 
-                                    className="w-100 rounded shadow-sm"
-                                    style={{maxHeight: '200px'}}
-                                  >
-                                    Ваш браузер не підтримує відео.
-                                  </video>
-                                ) : null}
-                              </div>
-                            ))}
-                          </div>
+          {steps.map((step, index) => (
+            <div key={step.id || index} className="recipe-step card mb-3">
+              <div className="card-body">
+                <div className="d-flex align-items-start">
+                  <div className="step-number bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style={{width: '2.5rem', height: '2.5rem', flexShrink: 0}}>
+                    {step.stepNumber}
+                  </div>
+                  <div className="step-content flex-grow-1">
+                    <p className="mb-0">{step.description}</p>
+                    {step.media && step.media.length > 0 && (
+                      <div className="step-media mt-3">
+                        <div className="row">
+                          {step.media.map((media, mediaIndex) => (
+                            <div key={mediaIndex} className="col-md-6 col-lg-4 mb-2">
+                              {media.type === 'image' ? (
+                                <img 
+                                  src={media.url} 
+                                  alt={media.alt || `Крок ${step.stepNumber}`}
+                                  className="img-fluid rounded shadow-sm"
+                                  style={{
+                                    maxHeight: '200px',         // CRITICAL: Limit height in recipe view
+                                    objectFit: 'contain',       // NEVER use 'cover' - it crops images!
+                                    width: '100%',              // Fill container width
+                                    backgroundColor: '#f8f9fa', // Gray background for transparency
+                                    cursor: 'pointer'           // Indicate clickable for modal
+                                  }}
+                                  onClick={() => setSelectedImage(media.url)} // Open modal with this image
+                                />
+                              ) : media.type === 'video' ? (
+                                <video 
+                                  src={media.url} 
+                                  controls 
+                                  className="w-100 rounded shadow-sm"
+                                  style={{maxHeight: '200px'}}
+                                >
+                                  Ваш браузер не підтримує відео.
+                                </video>
+                              ) : null}
+                            </div>
+                          ))}
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
-            ))
-          ) : (
-            <div className="recipe-step card">
-              <div className="card-body">
-                <p className="mb-0">{steps}</p>
-              </div>
             </div>
-          )}
+          ))}
         </div>
       </div>
 

@@ -68,8 +68,8 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ recipeId }) => {
           
           // Convert legacy string steps to structured steps
           if (typeof recipeData.steps === 'string') {
-            const stepTexts = recipeData.steps.split('\n').filter(step => step.trim());
-            recipeData.steps = stepTexts.map((stepText, index) => ({
+            const stepTexts = recipeData.steps.split('\n').filter((step: string) => step.trim());
+            recipeData.steps = stepTexts.map((stepText: string, index: number) => ({
               id: `step-${index + 1}`,
               stepNumber: index + 1,
               description: stepText.trim(),
@@ -100,7 +100,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ recipeId }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!recipe.title || !recipe.ingredients || recipe.ingredients.length === 0 || !recipe.category || 
+    if (!recipe.title || !recipe.ingredients || recipe.ingredients.length === 0 || !recipe.category_id || 
         !recipe.steps || recipe.steps.length === 0 || recipe.steps.some(step => !step.description?.trim())) {
       setError('Будь ласка, заповніть всі обов\'язкові поля та додайте хоча б один крок з описом');
       return;
@@ -116,8 +116,8 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ recipeId }) => {
         ingredients: recipe.ingredients?.filter(ing => ing.name.trim() !== ''),
         steps: recipe.steps || [],
         servings: recipe.servings,
-        category_id: recipe.category?.id,
-        tags: recipe.tags?.map(tag => tag.id) || []
+        category_id: recipe.category_id,
+        tags: recipe.tags || []
       };
 
       if (recipeId) {
@@ -224,11 +224,11 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ recipeId }) => {
             <select
               className="form-control"
               id="category"
-              value={recipe.category?.id || ''}
+              value={recipe.category_id || ''}
               onChange={(e) => {
                 const categoryId = parseInt(e.target.value);
                 const selectedCategory = categories.find(c => c.id === categoryId);
-                setRecipe({ ...recipe, category: selectedCategory || null });
+                setRecipe({ ...recipe, category_id: categoryId });
               }}
               required
             >
@@ -252,13 +252,13 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ recipeId }) => {
                     className="form-check-input"
                     type="checkbox"
                     id={`tag-${tag.id}`}
-                    checked={recipe.tags?.some(t => t.id === tag.id) || false}
+                    checked={recipe.tags?.includes(tag.id) || false}
                     onChange={(e) => {
                       const currentTags = recipe.tags || [];
                       if (e.target.checked) {
-                        setRecipe({ ...recipe, tags: [...currentTags, tag] });
+                        setRecipe({ ...recipe, tags: [...currentTags, tag.id] });
                       } else {
-                        setRecipe({ ...recipe, tags: currentTags.filter(t => t.id !== tag.id) });
+                        setRecipe({ ...recipe, tags: currentTags.filter(t => t !== tag.id) });
                       }
                     }}
                   />
