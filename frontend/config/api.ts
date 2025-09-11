@@ -1,14 +1,14 @@
 // API Configuration - use environment variable or default to /api
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
-// API Endpoints - exactly as in stable version
+// API Endpoints
 export const API_ENDPOINTS = {
   // Auth
   AUTH_LOGIN: `${API_BASE_URL}/auth/login`,
   AUTH_REGISTER: `${API_BASE_URL}/auth/register`,
   AUTH_ME: `${API_BASE_URL}/auth/me`,
   
-  // Recipes - direct path without API_BASE_URL (as in stable)
+  // Recipes  
   RECIPES: `/recipes/`,
   RECIPE_DELETE: (id: number) => `${API_BASE_URL}/recipes/${id}`,
   
