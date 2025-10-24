@@ -37,9 +37,9 @@ export const API_ENDPOINTS = {
   // ========================================================================
   // ADMIN RECIPES - Administrative recipe management
   // ========================================================================
-  ADMIN_RECIPES: `/api/recipes/admin`,  // GET: admin view of recipes
-  ADMIN_RECIPE_DELETE: (id: number) => `/api/recipes/admin/${id}`,  // Admin delete
-  ADMIN_RECIPE_UPDATE: (id: number) => `/api/recipes/admin/${id}`,  // Admin update
+  ADMIN_RECIPES: `/api/recipes/admin/?v=2`,  // GET: admin view of recipes - force cache refresh
+  ADMIN_RECIPE_DELETE: (id: number) => `/api/recipes/admin/${id}/`,  // Admin delete
+  ADMIN_RECIPE_UPDATE: (id: number) => `/api/recipes/admin/${id}/`,  // Admin update
   
   // ========================================================================
   // CATEGORIES & TAGS - Recipe classification system
